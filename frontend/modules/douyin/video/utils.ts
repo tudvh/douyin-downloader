@@ -3,7 +3,11 @@ import { toast } from 'react-toastify'
 import { API_ROUTES } from '@/configs'
 import { HEADER_HEIGHT } from '@/constant'
 
-import { DOUYIN_VIDEO_ID_REGEX, DOUYIN_VIDEO_URL_REGEX } from './constant'
+import {
+  DOUYIN_VIDEO_ID_REGEX,
+  DOUYIN_VIDEO_URL_REGEX,
+  PROXY_VIDEO_MAX_READ_ATTEMPTS,
+} from './constant'
 
 const SCROLL_GAP = 16
 
@@ -85,9 +89,22 @@ export const downloadVideoFromUrls = async (urls: string[], filename: string): P
 
   const [first, ...rest] = urls
   try {
-    const response = await fetch(API_ROUTES.PROXY.VIDEO(first))
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const blob = await response.blob()
+    const proxiedUrl = API_ROUTES.PROXY.VIDEO(first)
+    let blob: Blob | null = null
+    for (let attempt = 0; attempt < PROXY_VIDEO_MAX_READ_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch(proxiedUrl, { cache: 'no-store' })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const buf = await response.arrayBuffer()
+        blob = new Blob([buf], {
+          type: response.headers.get('content-type') || 'video/mp4',
+        })
+        break
+      } catch (e) {
+        if (attempt === PROXY_VIDEO_MAX_READ_ATTEMPTS - 1) throw e
+      }
+    }
+    if (!blob) throw new Error('Failed to read video body')
 
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')

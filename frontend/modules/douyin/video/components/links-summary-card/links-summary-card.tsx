@@ -23,7 +23,7 @@ import {
 import { API_ROUTES } from '@/configs'
 import type { IParseResult } from '@/types'
 
-import { DOUYIN_VIDEO } from '../../constant'
+import { DOUYIN_VIDEO, PROXY_VIDEO_MAX_READ_ATTEMPTS } from '../../constant'
 import { EFetchStatus } from '../../enum'
 import { getErrorMessage, scrollToElement } from '../../utils'
 import { FetchAgainBtn, ResetBtn, ResetKeepInputBtn, ResumeBtn, StopBtn } from './buttons'
@@ -158,9 +158,19 @@ export function LinksSummaryCard({
                 : prev,
             )
             const proxiedUrl = API_ROUTES.PROXY.VIDEO(upstreamUrls[j])
-            const response = await fetch(proxiedUrl)
-            if (!response.ok) throw new Error(`HTTP ${response.status}`)
-            blob = await response.blob()
+            for (let attempt = 0; attempt < PROXY_VIDEO_MAX_READ_ATTEMPTS; attempt++) {
+              try {
+                const response = await fetch(proxiedUrl, { cache: 'no-store' })
+                if (!response.ok) throw new Error(`HTTP ${response.status}`)
+                const buf = await response.arrayBuffer()
+                blob = new Blob([buf], {
+                  type: response.headers.get('content-type') || 'video/mp4',
+                })
+                break
+              } catch (readErr) {
+                if (attempt === PROXY_VIDEO_MAX_READ_ATTEMPTS - 1) throw readErr
+              }
+            }
             break
           } catch (err) {
             console.error(`Video #${i + 1} URL ${j + 1} failed:`, err)
