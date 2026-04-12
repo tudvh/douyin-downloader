@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui'
 import { WEB_ROUTES } from '@/configs/routes'
+import { APP_NAME } from '@/constant'
 
 import { PlatformSection } from './platform-section'
 
@@ -10,17 +11,11 @@ export function Home() {
 
   return (
     <main className="container mx-auto max-w-4xl space-y-10">
-      <div className="mb-8 text-center">
-        <h1
-          className="mb-3 text-4xl font-bold tracking-tight"
-          style={{ textWrap: 'balance' } as React.CSSProperties}
-        >
-          Downloader
-        </h1>
-        <p className="text-lg text-muted-foreground">{t('home_description')}</p>
-      </div>
-
-      <div className="flex flex-col gap-10">
+      <div className="space-y-8">
+        <div className="text-center">
+          <h1 className="mb-3 text-4xl font-bold tracking-tight">{APP_NAME}</h1>
+          <p className="text-lg text-muted-foreground">{t('home_description')}</p>
+        </div>
         <PlatformSection
           title={t('douyin')}
           videoRoute={WEB_ROUTES.DOUYIN.VIDEOS}

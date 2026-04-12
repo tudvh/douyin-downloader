@@ -1,5 +1,5 @@
 import { WEB_ROUTES } from '@/configs/routes'
-import { HEADER_HEIGHT } from '@/constant'
+import { APP_NAME, HEADER_HEIGHT } from '@/constant'
 import { Link } from '@/i18n/navigation'
 import Logo from '@/public/logo.svg'
 
@@ -18,7 +18,7 @@ export function Header() {
           className="flex h-full items-center gap-2 transition-opacity hover:opacity-80"
         >
           <Logo className="h-7 w-7 text-foreground" />
-          <span className="text-lg font-bold tracking-tight">Downloader</span>
+          <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
         </Link>
         <div className="flex items-center gap-2">
           <LanguageSelector />
