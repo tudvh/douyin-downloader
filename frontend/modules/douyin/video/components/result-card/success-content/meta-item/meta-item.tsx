@@ -1,11 +1,12 @@
 import { ClassValue } from 'clsx'
 import { CheckIcon, CopyIcon, ExternalLinkIcon, Loader2 } from 'lucide-react'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 
 import { Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui'
+import { Link } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
 import { copyTextToClipboard } from '../../../../utils'
@@ -54,6 +55,7 @@ type MetaItemProps =
     })
 
 export const MetaItem = ({ icon, label, children, classNames }: MetaItemProps) => {
+  const t = useTranslations()
   const [copyStatus, setCopyStatus] = useState<CopyStatus>(CopyStatus.Idle)
 
   const handleCopy = async (text: string) => {
@@ -61,7 +63,7 @@ export const MetaItem = ({ icon, label, children, classNames }: MetaItemProps) =
     try {
       const ok = await copyTextToClipboard(text)
       if (!ok) {
-        toast.error('Copy thất bại. Vui lòng thử lại.')
+        toast.error(t('copy_failed_msg'))
         return
       }
       setCopyStatus(CopyStatus.Copied)
@@ -75,10 +77,10 @@ export const MetaItem = ({ icon, label, children, classNames }: MetaItemProps) =
     if (icon?.type === 'copy') {
       const tooltipLabel =
         copyStatus === CopyStatus.Copied
-          ? `Đã copy ${label}`
+          ? t('copied_label', { label })
           : copyStatus === CopyStatus.Copying
-            ? `Đang copy ${label}`
-            : `Copy ${label}`
+            ? t('copying_label', { label })
+            : t('copy_label', { label })
 
       return (
         <TooltipProvider>

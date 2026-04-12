@@ -1,8 +1,9 @@
-import Link from 'next/link'
-
 import { WEB_ROUTES } from '@/configs/routes'
 import { HEADER_HEIGHT } from '@/constant'
+import { Link } from '@/i18n/navigation'
+import Logo from '@/public/logo.svg'
 
+import { LanguageSelector } from './language-selector'
 import { ThemeToggle } from './theme-toggle'
 
 export function Header() {
@@ -14,11 +15,15 @@ export function Header() {
       >
         <Link
           href={WEB_ROUTES.HOME}
-          className="flex h-full items-center text-lg font-semibold hover:opacity-80"
+          className="flex h-full items-center gap-2 transition-opacity hover:opacity-80"
         >
-          Downloader
+          <Logo className="h-7 w-7 text-foreground" />
+          <span className="text-lg font-bold tracking-tight">Downloader</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageSelector />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )

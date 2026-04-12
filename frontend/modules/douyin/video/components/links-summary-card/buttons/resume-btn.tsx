@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl'
+
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -5,23 +7,18 @@ interface Props {
   onClick: () => void
   className?: string
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
-  label?: string
 }
 
-export function ResumeBtn({
-  onClick,
-  className = 'w-full',
-  variant = 'default',
-  label = 'Tiếp tục',
-}: Props) {
+export function ResumeBtn({ onClick, className = 'w-full', variant = 'default' }: Props) {
+  const t = useTranslations()
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button variant={variant} onClick={onClick} className={className}>
-          {label}
+          {t('resume')}
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Tiếp tục phân tích các video còn lại</TooltipContent>
+      <TooltipContent>{t('resume_tooltip')}</TooltipContent>
     </Tooltip>
   )
 }

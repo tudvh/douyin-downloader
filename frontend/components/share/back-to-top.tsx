@@ -9,7 +9,6 @@ export function BackToTop() {
 
   useEffect(() => {
     const toggleVisibility = () => {
-      // Show button when page is scrolled down 300px
       if (window.scrollY > 300) {
         setIsVisible(true)
       } else {
@@ -17,13 +16,10 @@ export function BackToTop() {
       }
     }
 
-    // Listen to scroll events
     window.addEventListener('scroll', toggleVisibility)
 
-    // Check initial scroll position
     toggleVisibility()
 
-    // Cleanup
     return () => window.removeEventListener('scroll', toggleVisibility)
   }, [])
 

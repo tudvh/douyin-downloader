@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { type ChangeEvent, startTransition, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 
@@ -24,12 +25,13 @@ import { LinksSummaryCard } from './links-summary-card'
 import { ResultCard } from './result-card'
 
 export const DouyinVideo = () => {
+  const t = useTranslations()
   const [inputData, setInputData] = useState('')
   const [parseResults, setParseResults] = useState<IParseResult[]>([])
   const [validationError, setValidationError] = useState<string | null>(null)
   const [parseKey, setParseKey] = useState(0)
   const [fetchStatus, setFetchStatus] = useState<EFetchStatus>(EFetchStatus.Idle)
-  const abortRequestedRef = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const currentIndexRef = useRef(0)
 
   const handleReset = () => {
@@ -45,7 +47,7 @@ export const DouyinVideo = () => {
   }
 
   const handleStop = () => {
-    abortRequestedRef.current = true
+    abortControllerRef.current?.abort()
   }
 
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -65,7 +67,7 @@ export const DouyinVideo = () => {
 
     const urls = findVideoUrls(inputData)
     if (urls.length === 0) {
-      toast.error('Không tìm thấy URL hợp lệ trong nội dung bạn dán.')
+      toast.error(t('no_valid_url_found'))
       return
     }
 
@@ -77,12 +79,13 @@ export const DouyinVideo = () => {
       }
     })
     if (urlItems.length === 0) {
-      toast.error('Không tìm thấy URL hợp lệ trong nội dung bạn dán.')
+      toast.error(t('no_valid_url_found'))
       return
     }
 
     setParseKey(Date.now())
-    abortRequestedRef.current = false
+    const controller = new AbortController()
+    abortControllerRef.current = controller
     currentIndexRef.current = 0
 
     const initialResults: IParseResult[] = urlItems.map(({ url, id }) => ({
@@ -94,16 +97,16 @@ export const DouyinVideo = () => {
     setFetchStatus(EFetchStatus.Fetching)
 
     startTransition(async () => {
-      runFetchLoop(urlItems, 0)
+      runFetchLoop(urlItems, 0, controller.signal)
     })
   }
 
   const handleResume = () => {
     if (fetchStatus !== EFetchStatus.Paused) return
-    abortRequestedRef.current = false
+    const controller = new AbortController()
+    abortControllerRef.current = controller
     setFetchStatus(EFetchStatus.Fetching)
 
-    // Resume from the exact index we stopped at
     const urls = findVideoUrls(inputData).flatMap(url => {
       try {
         return [{ url, id: getVideoId(url) }]
@@ -113,24 +116,24 @@ export const DouyinVideo = () => {
     })
 
     startTransition(async () => {
-      runFetchLoop(urls, currentIndexRef.current)
+      runFetchLoop(urls, currentIndexRef.current, controller.signal)
     })
   }
 
-  const runFetchLoop = async (urlItems: { url: string; id: string }[], startIndex: number) => {
+  const runFetchLoop = async (
+    urlItems: { url: string; id: string }[],
+    startIndex: number,
+    signal: AbortSignal,
+  ) => {
     for (let i = startIndex; i < urlItems.length; i++) {
       currentIndexRef.current = i
-      if (abortRequestedRef.current) {
+      if (signal.aborted) {
         setFetchStatus(EFetchStatus.Paused)
         return
       }
       const { id } = urlItems[i]
       try {
-        const data = await DouyinVideoService.getVideo(id)
-        if (abortRequestedRef.current) {
-          setFetchStatus(EFetchStatus.Paused)
-          return
-        }
+        const data = await DouyinVideoService.getVideo(id, signal)
         setParseResults(prev =>
           prev.map((result, index) => {
             if (index !== i) return result
@@ -138,7 +141,7 @@ export const DouyinVideo = () => {
           }),
         )
       } catch (error) {
-        if (abortRequestedRef.current) {
+        if (signal.aborted) {
           setFetchStatus(EFetchStatus.Paused)
           return
         }
@@ -157,10 +160,10 @@ export const DouyinVideo = () => {
   const handleRetryFailed = (urlsToRetry: Set<string>) => {
     if (urlsToRetry.size === 0) return
 
-    abortRequestedRef.current = false
+    const controller = new AbortController()
+    abortControllerRef.current = controller
     setFetchStatus(EFetchStatus.Fetching)
 
-    // Reset status for selected items
     setParseResults(prev =>
       prev.map(result => {
         if (urlsToRetry.has(result.url)) {
@@ -171,31 +174,26 @@ export const DouyinVideo = () => {
     )
 
     startTransition(async () => {
-      // Find all target indices to retry
       const indicesToRetry = parseResults.reduce((acc, result, idx) => {
         if (urlsToRetry.has(result.url)) acc.push(idx)
         return acc
       }, [] as number[])
 
       for (const i of indicesToRetry) {
-        if (abortRequestedRef.current) {
+        if (controller.signal.aborted) {
           setFetchStatus(EFetchStatus.Paused)
           return
         }
         const result = parseResults[i]
         try {
-          const data = await DouyinVideoService.getVideo(result.id)
-          if (abortRequestedRef.current) {
-            setFetchStatus(EFetchStatus.Paused)
-            return
-          }
+          const data = await DouyinVideoService.getVideo(result.id, controller.signal)
           setParseResults(prev =>
             prev.map((r, idx) =>
               idx === i ? { ...r, status: 'success', data, error: undefined } : r,
             ),
           )
         } catch (error) {
-          if (abortRequestedRef.current) {
+          if (controller.signal.aborted) {
             setFetchStatus(EFetchStatus.Paused)
             return
           }
@@ -219,26 +217,24 @@ export const DouyinVideo = () => {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-8">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
-            Tải video Douyin nhanh, gọn và dễ dùng
+            {t('detail_page_heading', { platform: t('douyin'), type: t('videos') })}
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Dán nhiều URL hoặc mã chia sẻ, hệ thống sẽ tự phân tích và cho phép tải hàng loạt.
+          <p className="text-sm text-muted-foreground md:text-base">
+            {t('detail_page_description')}
           </p>
         </div>
 
         {fetchStatus === EFetchStatus.Idle ? (
           <Card className="flex flex-col overflow-hidden border-border/80 shadow-sm">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-xl">Nhập URL hoặc mã chia sẻ</CardTitle>
-              <CardDescription>
-                Hỗ trợ phân tích hàng loạt, không cần tách dòng hay phân cách đặc biệt.
-              </CardDescription>
+              <CardTitle className="text-xl">{t('enter_url_or_share_code')}</CardTitle>
+              <CardDescription>{t('batch_analysis_support_desc')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <Textarea
-                placeholder="Dán URL Douyin/TikTok hoặc mã chia sẻ vào đây..."
+                placeholder={t('paste_url_placeholder')}
                 value={inputData}
                 onChange={handleInputChange}
                 className="max-h-[50dvh] min-h-[6rem] w-full resize-none overflow-y-auto overscroll-contain border-border/80"
@@ -246,7 +242,7 @@ export const DouyinVideo = () => {
 
               {validationError && (
                 <Alert>
-                  <AlertTitle>Cảnh báo</AlertTitle>
+                  <AlertTitle>{t('warning')}</AlertTitle>
                   <AlertDescription>{validationError}</AlertDescription>
                 </Alert>
               )}
@@ -256,7 +252,7 @@ export const DouyinVideo = () => {
                 disabled={!inputData.trim() || !!validationError}
                 className="w-full"
               >
-                Bắt đầu phân tích
+                {t('start_analyzing')}
               </Button>
             </CardContent>
           </Card>
@@ -279,7 +275,7 @@ export const DouyinVideo = () => {
 
       {parseResults.length > 0 && fetchStatus !== EFetchStatus.Idle ? (
         <div className="space-y-5">
-          <h2 className="text-2xl font-semibold text-foreground">Kết quả phân tích</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t('analysis_results')}</h2>
 
           <div className="space-y-5">
             {parseResults.map((result, index) => (

@@ -1,6 +1,7 @@
 'use client'
 
 import { ClassValue } from 'clsx'
+import { useTranslations } from 'next-intl'
 import { ReactNode } from 'react'
 
 import { Button, Card, CardContent, CardHeader } from '@/components/ui'
@@ -25,6 +26,8 @@ export function ResultCardLayout({
   content,
   className,
 }: ResultCardLayoutProps) {
+  const t = useTranslations()
+
   return (
     <Card
       id={DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url)}
@@ -38,7 +41,7 @@ export function ResultCardLayout({
             className="block size-fit max-w-full p-0 text-base font-semibold break-all whitespace-normal"
             onClick={() => scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))}
           >
-            Video #{index + 1}
+            {t('video_index', { index: index + 1 })}
           </Button>
           <Button
             variant="link"
