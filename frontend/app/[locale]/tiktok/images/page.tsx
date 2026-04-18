@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
 import { TiktokImage } from '@/modules/tiktok/image'

@@ -1,16 +1,17 @@
 import { useTranslations } from 'next-intl'
+import { ComponentProps } from 'react'
 
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
 
 interface Props {
   onClick: () => void
+  variant?: ComponentProps<typeof Button>['variant']
   className?: string
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
 }
 
-export function StopBtn({ onClick, className = 'w-full', variant = 'outline' }: Props) {
+export function StopBtn({ onClick, variant, className }: Props) {
   const t = useTranslations()
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>

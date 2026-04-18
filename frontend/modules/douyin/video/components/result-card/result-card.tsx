@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 
-import type { IParseResult } from '@/types'
+import { IParseResult } from '@/types'
 
 import { FailedContent } from './failed-content'
 import { PendingContent } from './pending-content'
