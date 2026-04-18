@@ -28,7 +28,7 @@ export function PlatformSection({ title, videoRoute, imageRoute }: PlatformSecti
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="transition-shadow duration-200 hover:shadow-md">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base capitalize">
               {t('download_type', { type: t('video') })}
@@ -46,7 +46,7 @@ export function PlatformSection({ title, videoRoute, imageRoute }: PlatformSecti
           </CardContent>
         </Card>
 
-        <Card className="transition-shadow duration-200 hover:shadow-md">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base capitalize">
               {t('download_type', { type: t('image') })}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { type ChangeEvent, startTransition, useRef, useState } from 'react'
+import { ChangeEvent, startTransition, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 
 import {
@@ -16,7 +16,8 @@ import {
   CardTitle,
   Textarea,
 } from '@/components/ui'
-import type { IParseResult } from '@/types'
+import { useHeaderActions } from '@/providers'
+import { IParseResult } from '@/types'
 
 import { DouyinVideoService } from '../apis'
 import { EFetchStatus } from '../enum'
@@ -33,6 +34,7 @@ export const DouyinVideo = () => {
   const [fetchStatus, setFetchStatus] = useState<EFetchStatus>(EFetchStatus.Idle)
   const abortControllerRef = useRef<AbortController | null>(null)
   const currentIndexRef = useRef(0)
+  const { setIsActionsVisible } = useHeaderActions()
 
   const handleReset = () => {
     setInputData('')
@@ -214,6 +216,16 @@ export const DouyinVideo = () => {
     handleRetryFailed(urlsSet)
   }
 
+  useEffect(() => {
+    setIsActionsVisible(fetchStatus === EFetchStatus.Idle)
+  }, [fetchStatus, setIsActionsVisible])
+
+  useEffect(() => {
+    return () => {
+      setIsActionsVisible(true)
+    }
+  }, [setIsActionsVisible])
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-8">
@@ -233,12 +245,14 @@ export const DouyinVideo = () => {
               <CardDescription>{t('batch_analysis_support_desc')}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <Textarea
-                placeholder={t('paste_url_placeholder')}
-                value={inputData}
-                onChange={handleInputChange}
-                className="max-h-[50dvh] min-h-[6rem] w-full resize-none overflow-y-auto overscroll-contain border-border/80"
-              />
+              <div className="overflow-hidden rounded-lg border border-input bg-transparent shadow-sm transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
+                <Textarea
+                  placeholder={t('paste_url_placeholder', { platform: t('douyin') })}
+                  value={inputData}
+                  onChange={handleInputChange}
+                  className="max-h-[50dvh] min-h-24 w-full resize-none overflow-y-auto overscroll-contain rounded-none border-0 shadow-none focus-visible:ring-0"
+                />
+              </div>
 
               {validationError && (
                 <Alert>

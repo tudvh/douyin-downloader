@@ -12,12 +12,13 @@ type CommonKeys = keyof typeof enMessages &
   keyof typeof zhCNMessages &
   keyof typeof zhTWMessages
 
-type Messages = Pick<typeof enMessages, CommonKeys>
+type Messages = Record<CommonKeys, string>
 
 const _localeValidation = {
   en: enMessages,
   ja: jaMessages,
   es: esMessages,
+  vi: viMessages,
   'zh-CN': zhCNMessages,
   'zh-TW': zhTWMessages,
 } satisfies Record<string, Messages>

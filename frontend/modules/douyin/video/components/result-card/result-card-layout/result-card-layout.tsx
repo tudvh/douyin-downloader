@@ -6,7 +6,7 @@ import { ReactNode } from 'react'
 
 import { Button, Card, CardContent, CardHeader } from '@/components/ui'
 import { cn } from '@/lib/utils'
-import type { IParseResult } from '@/types'
+import { IParseResult } from '@/types'
 
 import { DOUYIN_VIDEO } from '../../../constant'
 import { scrollToElement } from '../../../utils'
@@ -38,14 +38,14 @@ export function ResultCardLayout({
         <div className="w-full min-w-0 space-y-1">
           <Button
             variant="link"
-            className="block size-fit max-w-full p-0 text-base font-semibold break-all whitespace-normal"
+            className="block size-fit max-w-full p-0 text-base font-semibold break-all whitespace-normal text-foreground"
             onClick={() => scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))}
           >
             {t('video_index', { index: index + 1 })}
           </Button>
           <Button
             variant="link"
-            className="block size-fit max-w-full p-0 text-sm break-all whitespace-normal"
+            className="block size-fit max-w-full p-0 text-sm break-all whitespace-normal text-muted-foreground"
             asChild
           >
             <a href={result.url} target="_blank" rel="noopener noreferrer">

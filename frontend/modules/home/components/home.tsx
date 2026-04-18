@@ -10,7 +10,7 @@ export function Home() {
   const t = useTranslations()
 
   return (
-    <main className="container mx-auto max-w-4xl space-y-10">
+    <div className="mx-auto max-w-4xl space-y-10">
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="mb-3 text-4xl font-bold tracking-tight">{APP_NAME}</h1>
@@ -43,6 +43,6 @@ export function Home() {
           </ul>
         </CardContent>
       </Card>
-    </main>
+    </div>
   )
 }

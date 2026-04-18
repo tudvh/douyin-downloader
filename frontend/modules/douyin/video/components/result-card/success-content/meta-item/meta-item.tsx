@@ -1,7 +1,7 @@
 import { ClassValue } from 'clsx'
 import { CheckIcon, CopyIcon, ExternalLinkIcon, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import type { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 

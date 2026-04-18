@@ -1,24 +1,25 @@
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { ComponentProps } from 'react'
 
 import { ConfirmModal } from '@/components/share'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
+import { useModal } from '@/hooks'
 
 interface Props {
   onClick: () => void
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  variant?: ComponentProps<typeof Button>['variant']
   className?: string
 }
 
-export function FetchAgainBtn({ onClick, variant = 'secondary', className = 'w-full' }: Props) {
+export function FetchAgainBtn({ onClick, variant, className }: Props) {
   const t = useTranslations()
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, onOpenChange, open } = useModal()
+
   return (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant={variant} onClick={() => setIsOpen(true)} className={className}>
+          <Button variant={variant} onClick={open} className={className}>
             {t('re_analyze')}
           </Button>
         </TooltipTrigger>
@@ -27,7 +28,7 @@ export function FetchAgainBtn({ onClick, variant = 'secondary', className = 'w-f
 
       <ConfirmModal
         isOpen={isOpen}
-        onOpenChange={setIsOpen}
+        onOpenChange={onOpenChange}
         title={t('re_analyze_confirm')}
         description={t('re_analyze_confirm_desc')}
         onConfirm={onClick}

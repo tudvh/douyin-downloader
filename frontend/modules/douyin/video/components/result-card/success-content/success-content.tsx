@@ -13,7 +13,7 @@ import {
   Button,
 } from '@/components/ui'
 import { API_ROUTES } from '@/configs'
-import type { IDouyinVideo } from '@/types'
+import { IDouyinVideo } from '@/types'
 
 import { DOUYIN_VIDEO } from '../../../constant'
 import { downloadVideoFromUrls, getErrorMessage } from '../../../utils'

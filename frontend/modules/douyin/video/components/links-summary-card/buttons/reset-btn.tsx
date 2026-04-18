@@ -1,24 +1,25 @@
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { ComponentProps } from 'react'
 
 import { ConfirmModal } from '@/components/share'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
+import { useModal } from '@/hooks'
 
 interface Props {
   onClick: () => void
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  variant?: ComponentProps<typeof Button>['variant']
   className?: string
 }
 
-export function ResetBtn({ onClick, variant = 'outline', className = 'w-full' }: Props) {
+export function ResetBtn({ onClick, variant, className }: Props) {
   const t = useTranslations()
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, onOpenChange, open } = useModal()
+
   return (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant={variant} onClick={() => setIsOpen(true)} className={className}>
+          <Button variant={variant} onClick={open} className={className}>
             {t('reset')}
           </Button>
         </TooltipTrigger>
@@ -27,7 +28,7 @@ export function ResetBtn({ onClick, variant = 'outline', className = 'w-full' }:
 
       <ConfirmModal
         isOpen={isOpen}
-        onOpenChange={setIsOpen}
+        onOpenChange={onOpenChange}
         title={t('reset_confirm')}
         description={t('reset_confirm_desc')}
         onConfirm={onClick}

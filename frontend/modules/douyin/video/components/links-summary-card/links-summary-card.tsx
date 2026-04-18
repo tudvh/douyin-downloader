@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui'
 import { API_ROUTES } from '@/configs'
-import type { IParseResult } from '@/types'
+import { IParseResult } from '@/types'
 
 import { DOUYIN_VIDEO, PROXY_VIDEO_MAX_READ_ATTEMPTS } from '../../constant'
 import { EFetchStatus } from '../../enum'
@@ -321,21 +321,23 @@ export function LinksSummaryCard({
                 <h3 className="text-base font-semibold text-amber-700 dark:text-amber-400">
                   {t('pending_list')}
                 </h3>
-                <div className="max-h-[25dvh] min-h-0 overflow-y-auto overscroll-contain rounded-xl border border-amber-200/70 bg-amber-50/50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
-                  {pendingResults.map(result => (
-                    <div
-                      key={result.url}
-                      className="rounded p-2 transition-colors hover:bg-amber-100/70 dark:hover:bg-amber-500/20"
-                    >
-                      <Button
-                        variant="link"
-                        onClick={() => scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))}
-                        className="block size-fit max-w-full rounded-none p-0 text-left text-sm font-normal break-all whitespace-normal text-amber-700 dark:text-amber-400"
+                <div className="overflow-hidden rounded-xl border border-amber-200/70 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/10">
+                  <div className="max-h-[25dvh] min-h-0 overflow-y-auto overscroll-contain p-3">
+                    {pendingResults.map(result => (
+                      <div
+                        key={result.url}
+                        className="rounded p-2 transition-colors hover:bg-amber-100/70 dark:hover:bg-amber-500/20"
                       >
-                        {result.url}
-                      </Button>
-                    </div>
-                  ))}
+                        <Button
+                          variant="link"
+                          onClick={() => scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))}
+                          className="block size-fit max-w-full rounded-none p-0 text-left text-sm font-normal break-all whitespace-normal text-amber-700 dark:text-amber-400"
+                        >
+                          {result.url}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -369,29 +371,33 @@ export function LinksSummaryCard({
                     </Button>
                   ) : null}
                 </div>
-                <div className="max-h-[25dvh] min-h-0 overflow-y-auto overscroll-contain rounded-xl border border-emerald-200/70 bg-emerald-50/50 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-                  {successResults.map(result => (
-                    <label
-                      key={result.url}
-                      className="user-select-none flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-emerald-100/80 dark:hover:bg-emerald-500/20"
-                    >
-                      <Checkbox
-                        checked={selectedUrls.has(result.url)}
-                        onCheckedChange={checked => handleSelectUrl(result.url, checked === true)}
-                        disabled={isDownloading || fetchStatus === EFetchStatus.Fetching}
-                        className="border-emerald-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white dark:border-emerald-700 dark:data-[state=checked]:bg-emerald-500"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <Button
-                          variant="link"
-                          onClick={() => scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))}
-                          className="block size-fit max-w-full rounded-none p-0 text-left text-sm font-normal break-all whitespace-normal text-emerald-700 dark:text-emerald-400"
-                        >
-                          {result.url}
-                        </Button>
-                      </div>
-                    </label>
-                  ))}
+                <div className="overflow-hidden rounded-xl border border-emerald-200/70 bg-emerald-50/50 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                  <div className="max-h-[25dvh] min-h-0 overflow-y-auto overscroll-contain p-3">
+                    {successResults.map(result => (
+                      <label
+                        key={result.url}
+                        className="user-select-none flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-emerald-100/80 dark:hover:bg-emerald-500/20"
+                      >
+                        <Checkbox
+                          checked={selectedUrls.has(result.url)}
+                          onCheckedChange={checked => handleSelectUrl(result.url, checked === true)}
+                          disabled={isDownloading || fetchStatus === EFetchStatus.Fetching}
+                          className="border-emerald-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white dark:border-emerald-700 dark:data-[state=checked]:bg-emerald-500"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <Button
+                            variant="link"
+                            onClick={() =>
+                              scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))
+                            }
+                            className="block size-fit max-w-full rounded-none p-0 text-left text-sm font-normal break-all whitespace-normal text-emerald-700 dark:text-emerald-400"
+                          >
+                            {result.url}
+                          </Button>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -435,63 +441,81 @@ export function LinksSummaryCard({
                     </TooltipProvider>
                   ) : null}
                 </div>
-                <div className="max-h-[25dvh] min-h-0 overflow-y-auto overscroll-contain rounded-xl border border-red-200/70 bg-red-50/60 p-3 dark:border-red-500/20 dark:bg-red-500/10">
-                  {failedResults.map(result => (
-                    <label
-                      key={result.url}
-                      className="user-select-none flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-red-100/70 dark:hover:bg-red-500/20"
-                    >
-                      <Checkbox
-                        checked={selectedFailedUrls.has(result.url)}
-                        onCheckedChange={checked =>
-                          handleSelectFailedUrl(result.url, checked === true)
-                        }
-                        disabled={isDownloading || fetchStatus === EFetchStatus.Fetching}
-                        className="border-red-300 data-[state=checked]:bg-red-600 data-[state=checked]:text-white dark:border-red-700 dark:data-[state=checked]:bg-red-500"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <Button
-                          variant="link"
-                          onClick={() => scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))}
-                          className="block size-fit max-w-full rounded-none p-0 text-left text-sm font-normal break-all whitespace-normal text-red-600 dark:text-red-400"
-                        >
-                          {result.url}
-                        </Button>
-                      </div>
-                    </label>
-                  ))}
+                <div className="overflow-hidden rounded-xl border border-red-200/70 bg-red-50/60 dark:border-red-500/20 dark:bg-red-500/10">
+                  <div className="max-h-[25dvh] min-h-0 overflow-y-auto overscroll-contain p-3">
+                    {failedResults.map(result => (
+                      <label
+                        key={result.url}
+                        className="user-select-none flex cursor-pointer items-center gap-2 rounded p-2 transition-colors hover:bg-red-100/70 dark:hover:bg-red-500/20"
+                      >
+                        <Checkbox
+                          checked={selectedFailedUrls.has(result.url)}
+                          onCheckedChange={checked =>
+                            handleSelectFailedUrl(result.url, checked === true)
+                          }
+                          disabled={isDownloading || fetchStatus === EFetchStatus.Fetching}
+                          className="border-red-300 data-[state=checked]:bg-red-600 data-[state=checked]:text-white dark:border-red-700 dark:data-[state=checked]:bg-red-500"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <Button
+                            variant="link"
+                            onClick={() =>
+                              scrollToElement(DOUYIN_VIDEO.VIDEO_ELEMENT_ID(result.url))
+                            }
+                            className="block size-fit max-w-full rounded-none p-0 text-left text-sm font-normal break-all whitespace-normal text-red-600 dark:text-red-400"
+                          >
+                            {result.url}
+                          </Button>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : null}
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-2 pt-2">
-          <TooltipProvider>
-            {fetchStatus === EFetchStatus.Fetching ? <StopBtn onClick={onStop} /> : null}
+        <TooltipProvider>
+          {fetchStatus === EFetchStatus.Fetching ? (
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end lg:gap-3">
+              <StopBtn onClick={onStop} variant="destructive" className="w-full sm:w-auto" />
+            </div>
+          ) : null}
 
-            {fetchStatus === EFetchStatus.Paused ? (
-              <div className="grid gap-x-3 gap-y-2 md:grid-cols-2 lg:grid-cols-4">
-                <ResumeBtn onClick={onResume} />
-                <FetchAgainBtn onClick={onFetchAgain} variant="secondary" />
-                <ResetBtn onClick={onReset} variant="outline" />
-                <ResetKeepInputBtn onClick={onResetKeepInput} variant="outline" />
-              </div>
-            ) : null}
+          {fetchStatus === EFetchStatus.Paused ? (
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end lg:gap-3">
+              <ResetBtn onClick={onReset} variant="ghost" className="w-full sm:w-auto" />
+              <ResetKeepInputBtn
+                onClick={onResetKeepInput}
+                variant="outline"
+                className="w-full sm:w-auto"
+              />
+              <FetchAgainBtn
+                onClick={onFetchAgain}
+                variant="secondary"
+                className="w-full sm:w-auto"
+              />
+              <ResumeBtn onClick={onResume} variant="default" className="w-full sm:w-auto" />
+            </div>
+          ) : null}
 
-            {fetchStatus === EFetchStatus.Done ? (
-              <div className="grid gap-x-3 gap-y-2 md:grid-cols-[1fr_auto_auto]">
-                <FetchAgainBtn onClick={onFetchAgain} />
-                <ResetBtn onClick={onReset} variant="outline" className="w-full md:w-auto" />
-                <ResetKeepInputBtn
-                  onClick={onResetKeepInput}
-                  variant="outline"
-                  className="w-full md:w-auto"
-                />
-              </div>
-            ) : null}
-          </TooltipProvider>
-        </div>
+          {fetchStatus === EFetchStatus.Done ? (
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end lg:gap-3">
+              <ResetBtn onClick={onReset} variant="ghost" className="w-full sm:w-auto" />
+              <ResetKeepInputBtn
+                onClick={onResetKeepInput}
+                variant="outline"
+                className="w-full sm:w-auto"
+              />
+              <FetchAgainBtn
+                onClick={onFetchAgain}
+                variant="default"
+                className="w-full sm:w-auto"
+              />
+            </div>
+          ) : null}
+        </TooltipProvider>
       </CardContent>
     </Card>
   )
