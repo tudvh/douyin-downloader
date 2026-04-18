@@ -1,5 +1,7 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+
 import type { IParseResult } from '@/types'
 
 import { FailedContent } from './failed-content'
@@ -15,6 +17,8 @@ interface ResultCardProps {
 }
 
 export function ResultCard({ result, index, onRetry, disabledRetry }: ResultCardProps) {
+  const t = useTranslations()
+
   if (result.status === 'pending') {
     return (
       <ResultCardLayout
@@ -23,7 +27,7 @@ export function ResultCard({ result, index, onRetry, disabledRetry }: ResultCard
         className="border-amber-200/80 dark:border-amber-500/20"
         badge={
           <div className="w-fit rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-            ⏳ Đang xử lý
+            ⏳ {t('processing')}
           </div>
         }
         content={<PendingContent />}
@@ -39,12 +43,12 @@ export function ResultCard({ result, index, onRetry, disabledRetry }: ResultCard
         className="border-red-200/80 dark:border-red-500/20"
         badge={
           <div className="w-fit rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
-            ❌ Phân tích thất bại
+            ❌ {t('analysis_failed')}
           </div>
         }
         content={
           <FailedContent
-            error={result.error || 'Unknown error'}
+            error={result.error || t('unknown_error')}
             onRetry={() => onRetry(result.url)}
             disabled={disabledRetry}
           />
@@ -61,7 +65,7 @@ export function ResultCard({ result, index, onRetry, disabledRetry }: ResultCard
         className="border-emerald-200/80 dark:border-emerald-500/20"
         badge={
           <div className="w-fit rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-            ✅ Phân tích thành công
+            ✅ {t('analysis_success')}
           </div>
         }
         content={<SuccessContent data={result.data} index={index} />}

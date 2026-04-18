@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { ConfirmModal } from '@/components/share'
@@ -8,32 +9,27 @@ interface Props {
   onClick: () => void
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
   className?: string
-  label?: string
 }
 
-export function ResetKeepInputBtn({
-  onClick,
-  variant = 'outline',
-  className = 'w-full',
-  label = 'Nhập lại',
-}: Props) {
+export function ResetKeepInputBtn({ onClick, variant = 'outline', className = 'w-full' }: Props) {
+  const t = useTranslations()
   const [isOpen, setIsOpen] = useState(false)
   return (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant={variant} onClick={() => setIsOpen(true)} className={className}>
-            {label}
+            {t('re_enter')}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Giữ nguyên link đã nhập và quay về ban đầu</TooltipContent>
+        <TooltipContent>{t('re_enter_tooltip')}</TooltipContent>
       </Tooltip>
 
       <ConfirmModal
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        title="Xác nhận nhập lại?"
-        description="Hành động này sẽ xóa dữ liệu hiện tại nhưng giữ lại link đã nhập. Bạn có chắc chắn muốn tiếp tục?"
+        title={t('re_enter_confirm')}
+        description={t('re_enter_confirm_desc')}
         onConfirm={onClick}
       />
     </>

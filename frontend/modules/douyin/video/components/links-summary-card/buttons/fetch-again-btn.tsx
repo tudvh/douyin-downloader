@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { ConfirmModal } from '@/components/share'
@@ -8,32 +9,27 @@ interface Props {
   onClick: () => void
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
   className?: string
-  label?: string
 }
 
-export function FetchAgainBtn({
-  onClick,
-  variant = 'secondary',
-  className = 'w-full',
-  label = 'Phân tích lại',
-}: Props) {
+export function FetchAgainBtn({ onClick, variant = 'secondary', className = 'w-full' }: Props) {
+  const t = useTranslations()
   const [isOpen, setIsOpen] = useState(false)
   return (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant={variant} onClick={() => setIsOpen(true)} className={className}>
-            {label}
+            {t('re_analyze')}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Thực hiện phân tích lại toàn bộ từ đầu danh sách</TooltipContent>
+        <TooltipContent>{t('re_analyze_tooltip')}</TooltipContent>
       </Tooltip>
 
       <ConfirmModal
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        title="Xác nhận phân tích lại?"
-        description="Hành động này sẽ thực hiện phân tích lại toàn bộ danh sách. Bạn có chắc chắn muốn tiếp tục?"
+        title={t('re_analyze_confirm')}
+        description={t('re_analyze_confirm_desc')}
         onConfirm={onClick}
       />
     </>

@@ -1,5 +1,7 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,8 +20,8 @@ interface ConfirmModalProps {
   title: string
   description?: string
   onConfirm: () => void
-  confirmText?: string
-  cancelText?: string
+  confirmKey?: Parameters<ReturnType<typeof useTranslations>>[0]
+  cancelKey?: Parameters<ReturnType<typeof useTranslations>>[0]
   variant?: 'default' | 'destructive'
 }
 
@@ -29,10 +31,12 @@ export function ConfirmModal({
   title,
   description,
   onConfirm,
-  confirmText = 'Xác nhận',
-  cancelText = 'Hủy',
+  confirmKey = 'confirm',
+  cancelKey = 'cancel',
   variant = 'default',
 }: ConfirmModalProps) {
+  const t = useTranslations()
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -41,7 +45,7 @@ export function ConfirmModal({
           {description && <AlertDialogDescription>{description}</AlertDialogDescription>}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onOpenChange(false)}>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => onOpenChange(false)}>{t(cancelKey)}</AlertDialogCancel>
           <AlertDialogAction
             onClick={e => {
               e.preventDefault()
@@ -53,7 +57,7 @@ export function ConfirmModal({
                 'text-destructive-foreground bg-destructive hover:bg-destructive/90',
             )}
           >
-            {confirmText}
+            {t(confirmKey)}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

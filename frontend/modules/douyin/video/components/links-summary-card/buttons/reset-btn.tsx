@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { ConfirmModal } from '@/components/share'
@@ -8,32 +9,27 @@ interface Props {
   onClick: () => void
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
   className?: string
-  label?: string
 }
 
-export function ResetBtn({
-  onClick,
-  variant = 'outline',
-  className = 'w-full',
-  label = 'Đặt lại',
-}: Props) {
+export function ResetBtn({ onClick, variant = 'outline', className = 'w-full' }: Props) {
+  const t = useTranslations()
   const [isOpen, setIsOpen] = useState(false)
   return (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant={variant} onClick={() => setIsOpen(true)} className={className}>
-            {label}
+            {t('reset')}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Xóa toàn bộ dữ liệu và quay về ban đầu</TooltipContent>
+        <TooltipContent>{t('reset_tooltip')}</TooltipContent>
       </Tooltip>
 
       <ConfirmModal
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        title="Xác nhận đặt lại?"
-        description="Hành động này sẽ xóa toàn bộ dữ liệu hiện tại và quay về màn hình nhập liệu. Bạn có chắc chắn muốn tiếp tục?"
+        title={t('reset_confirm')}
+        description={t('reset_confirm_desc')}
         onConfirm={onClick}
       />
     </>

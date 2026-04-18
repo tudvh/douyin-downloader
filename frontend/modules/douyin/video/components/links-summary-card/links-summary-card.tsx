@@ -2,8 +2,8 @@
 
 import JSZip from 'jszip'
 import { CheckCircle2, Loader2, PauseCircle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { toast } from 'react-toastify'
 
 import {
   Alert,
@@ -49,6 +49,7 @@ export function LinksSummaryCard({
   onFetchAgain,
   onReset,
 }: LinksSummaryCardProps) {
+  const t = useTranslations()
   const [selectedUrls, setSelectedUrls] = useState<Set<string>>(new Set())
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState<{
@@ -58,6 +59,7 @@ export function LinksSummaryCard({
     itemIndex?: number
     itemUrlIndex?: number
   } | null>(null)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   const handleSelectUrl = (url: string, checked: boolean) => {
     setSelectedUrls(prev => {
@@ -128,6 +130,8 @@ export function LinksSummaryCard({
     if (resultsWithVideo.length === 0) return
 
     setIsDownloading(true)
+
+    setDownloadError(null)
     setDownloadProgress({
       current: 0,
       total: resultsWithVideo.length,
@@ -177,7 +181,10 @@ export function LinksSummaryCard({
             const remaining = upstreamUrls.slice(j + 1)
             if (remaining.length === 0) {
               throw new Error(
-                `Không tải được video #${i + 1} (đã thử hết ${upstreamUrls.length} URL).`,
+                t('download_video_failed_msg', {
+                  index: i + 1,
+                  totalUrl: upstreamUrls.length,
+                }),
               )
             }
           }
@@ -195,7 +202,7 @@ export function LinksSummaryCard({
       }
 
       if (downloads.length === 0) {
-        toast.error('Không tải được video nào. Vui lòng thử lại.')
+        setDownloadError(t('download_all_failed_msg'))
         return
       }
 
@@ -220,7 +227,7 @@ export function LinksSummaryCard({
       window.URL.revokeObjectURL(zipUrl)
     } catch (error) {
       console.error('Error downloading zip:', error)
-      toast.error(getErrorMessage(error))
+      setDownloadError(getErrorMessage(error))
     } finally {
       setIsDownloading(false)
       setDownloadProgress(null)
@@ -233,21 +240,21 @@ export function LinksSummaryCard({
         return (
           <span className="flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
             <Loader2 className="size-3.5 animate-spin" />
-            Đang phân tích
+            {t('analyzing')}
           </span>
         )
       case EFetchStatus.Paused:
         return (
           <span className="flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
             <PauseCircle className="size-3.5" />
-            Đã tạm dừng
+            {t('paused')}
           </span>
         )
       case EFetchStatus.Done:
         return (
           <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
             <CheckCircle2 className="size-3.5" />
-            Hoàn tất
+            {t('done')}
           </span>
         )
       default:
@@ -257,43 +264,52 @@ export function LinksSummaryCard({
 
   const downloadStatusText = (() => {
     if (!isDownloading) return null
-    if (!downloadProgress) return 'Đang chuẩn bị tải...'
+    if (!downloadProgress) return t('preparing_to_download')
 
-    if (downloadProgress.stage === 'zipping') return 'Đang tạo file ZIP...'
+    if (downloadProgress.stage === 'zipping') return t('creating_zip_file')
     const { current, total, itemIndex, itemUrlIndex } = downloadProgress
 
     if (itemIndex && itemUrlIndex) {
-      const numerator = `${itemIndex}.${itemUrlIndex}`
-      return `Đang tải & đóng gói: ${numerator}/${total}`
+      return t('downloading_and_packing_detail', {
+        itemIndex,
+        itemUrlIndex,
+        total,
+      })
     }
 
-    return `Đang tải & đóng gói: ${current}/${total}`
+    return t('downloading_and_packing', { current, total })
   })()
 
   return (
     <Card className="flex flex-col overflow-hidden border-border/80 shadow-sm">
       <CardHeader className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <CardTitle className="text-xl">Tiến trình phân tích</CardTitle>
+          <CardTitle className="text-xl">{t('analysis_progress')}</CardTitle>
           {renderStatusBadge()}
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {pendingResults.length > 0 ? (
             <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-              ⏳ {pendingResults.length} đang chờ
+              ⏳ {t('pending_count', { count: pendingResults.length })}
             </span>
           ) : null}
           <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-            ✅ {successResults.length} thành công
+            ✅ {t('success_count', { count: successResults.length })}
           </span>
           <span className="rounded-full bg-red-50 px-2 py-1 text-red-600 dark:bg-red-500/10 dark:text-red-400">
-            ❌ {failedResults.length} thất bại
+            ❌ {t('failed_count', { count: failedResults.length })}
           </span>
         </div>
         {isDownloading ? (
           <Alert>
-            <AlertTitle>Đang tải xuống</AlertTitle>
+            <AlertTitle>{t('downloading')}</AlertTitle>
             <AlertDescription>{downloadStatusText}</AlertDescription>
+          </Alert>
+        ) : null}
+        {downloadError ? (
+          <Alert variant="destructive">
+            <AlertTitle>{t('download_failed')}</AlertTitle>
+            <AlertDescription>{downloadError}</AlertDescription>
           </Alert>
         ) : null}
       </CardHeader>
@@ -303,7 +319,7 @@ export function LinksSummaryCard({
             {pendingResults.length > 0 ? (
               <div className="flex flex-col gap-3">
                 <h3 className="text-base font-semibold text-amber-700 dark:text-amber-400">
-                  Danh sách đang chờ
+                  {t('pending_list')}
                 </h3>
                 <div className="max-h-[25dvh] min-h-0 overflow-y-auto overscroll-contain rounded-xl border border-amber-200/70 bg-amber-50/50 p-3 dark:border-amber-500/20 dark:bg-amber-500/10">
                   {pendingResults.map(result => (
@@ -328,7 +344,7 @@ export function LinksSummaryCard({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <h3 className="text-base font-semibold text-emerald-700 dark:text-emerald-400">
-                      Danh sách thành công
+                      {t('success_list')}
                     </h3>
                     <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
                       <Checkbox
@@ -342,12 +358,14 @@ export function LinksSummaryCard({
                         onCheckedChange={checked => handleSelectAll(checked === true)}
                         disabled={isDownloading || fetchStatus === EFetchStatus.Fetching}
                       />
-                      Chọn tất cả
+                      {t('select_all')}
                     </label>
                   </div>
                   {selectedUrls.size > 0 ? (
                     <Button size="sm" onClick={handleDownloadSelected} disabled={isDownloading}>
-                      {isDownloading ? 'Đang tải...' : `Tải ${selectedUrls.size} video đã chọn`}
+                      {isDownloading
+                        ? t('downloading_dots')
+                        : t('download_selected_videos', { count: selectedUrls.size })}
                     </Button>
                   ) : null}
                 </div>
@@ -382,7 +400,7 @@ export function LinksSummaryCard({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <h3 className="text-base font-semibold text-red-600 dark:text-red-400">
-                      Danh sách thất bại
+                      {t('failed_list')}
                     </h3>
                     <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
                       <Checkbox
@@ -396,7 +414,7 @@ export function LinksSummaryCard({
                         onCheckedChange={checked => handleSelectAllFailed(checked === true)}
                         disabled={isDownloading || fetchStatus === EFetchStatus.Fetching}
                       />
-                      Chọn tất cả
+                      {t('select_all')}
                     </label>
                   </div>
                   {selectedFailedUrls.size > 0 ? (
@@ -409,10 +427,10 @@ export function LinksSummaryCard({
                             onClick={handleRetryFailedLocal}
                             disabled={isDownloading || fetchStatus === EFetchStatus.Fetching}
                           >
-                            Phân tích lại {selectedFailedUrls.size} video lỗi
+                            {t('re_analyze_failed_videos', { count: selectedFailedUrls.size })}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Phân tích lại các video lỗi đã chọn</TooltipContent>
+                        <TooltipContent>{t('retry_failed_tooltip')}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   ) : null}
@@ -463,7 +481,7 @@ export function LinksSummaryCard({
 
             {fetchStatus === EFetchStatus.Done ? (
               <div className="grid gap-x-3 gap-y-2 md:grid-cols-[1fr_auto_auto]">
-                <FetchAgainBtn onClick={onFetchAgain} label="Phân tích lại" />
+                <FetchAgainBtn onClick={onFetchAgain} />
                 <ResetBtn onClick={onReset} variant="outline" className="w-full md:w-auto" />
                 <ResetKeepInputBtn
                   onClick={onResetKeepInput}

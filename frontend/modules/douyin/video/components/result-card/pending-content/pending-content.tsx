@@ -1,8 +1,11 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+
 import { Skeleton } from '@/components/ui'
 
 export function PendingContent() {
+  const t = useTranslations()
   return (
     <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 md:grid-cols-2">
       <div className="h-[60dvh] w-full overflow-hidden rounded-lg">
@@ -19,12 +22,12 @@ export function PendingContent() {
             <Skeleton className="h-5 w-32" />
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="shrink-0 text-muted-foreground">Kích thước</span>
+            <span className="shrink-0 text-muted-foreground capitalize">{t('size')}</span>
             <Skeleton className="h-5 w-28" />
           </div>
           <div className="flex items-center justify-between gap-4">
             <div className="flex shrink-0 items-center gap-2">
-              <span className="shrink-0 text-muted-foreground">Tác giả</span>
+              <span className="shrink-0 text-muted-foreground capitalize">{t('author')}</span>
               <Skeleton className="size-4 shrink-0 rounded" />
             </div>
             <div className="flex min-w-0 items-center gap-2">
@@ -33,12 +36,12 @@ export function PendingContent() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="shrink-0 text-muted-foreground">Lượt thích</span>
+            <span className="shrink-0 text-muted-foreground capitalize">{t('likes')}</span>
             <Skeleton className="h-5 w-16" />
           </div>
           <div className="flex items-start gap-4">
             <div className="flex shrink-0 items-center gap-2">
-              <span className="text-muted-foreground">Mô tả</span>
+              <span className="text-muted-foreground capitalize">{t('description')}</span>
               <Skeleton className="size-4 shrink-0 rounded" />
             </div>
             <div className="min-w-0 flex-1 space-y-0.5 text-right">

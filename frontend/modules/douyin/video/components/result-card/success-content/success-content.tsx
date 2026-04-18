@@ -1,13 +1,22 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 
-import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components/ui'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+} from '@/components/ui'
 import { API_ROUTES } from '@/configs'
 import type { IDouyinVideo } from '@/types'
 
 import { DOUYIN_VIDEO } from '../../../constant'
-import { downloadVideoFromUrls } from '../../../utils'
+import { downloadVideoFromUrls, getErrorMessage } from '../../../utils'
 import { MetaItem } from './meta-item'
 
 interface SuccessContentProps {
@@ -16,13 +25,18 @@ interface SuccessContentProps {
 }
 
 export function SuccessContent({ data, index }: SuccessContentProps) {
+  const t = useTranslations()
   const [isDownloading, setIsDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const handleDownload = async () => {
     setIsDownloading(true)
+    setDownloadError(null)
     try {
       await downloadVideoFromUrls(data.urls, DOUYIN_VIDEO.MP4_FILE_NAME(index + 1, data.id))
+    } catch (error) {
+      setDownloadError(getErrorMessage(error))
     } finally {
       setIsDownloading(false)
     }
@@ -73,15 +87,15 @@ export function SuccessContent({ data, index }: SuccessContentProps) {
           <MetaItem label="ID" icon={{ type: 'copy', value: data.id }}>
             {data.id}
           </MetaItem>
-          <MetaItem label="kích thước">
+          <MetaItem label={t('size')}>
             {data.width}×{data.height} - {data.fps} fps
           </MetaItem>
           <MetaItem
-            label="tác giả"
+            label={t('author')}
             icon={{
               type: 'link',
               href: DOUYIN_VIDEO.DOUYIN_USER_URL(data.author.id),
-              tooltip: `Trang cá nhân của ${data.author.nickname}`,
+              tooltip: t('author_profile_tooltip', { nickname: data.author.nickname }),
             }}
           >
             <div className="flex min-w-0 items-center justify-end gap-2">
@@ -92,21 +106,28 @@ export function SuccessContent({ data, index }: SuccessContentProps) {
               <span className="truncate">{data.author.nickname}</span>
             </div>
           </MetaItem>
-          <MetaItem label="lượt thích">{data.love_count.toLocaleString()}</MetaItem>
+          <MetaItem label={t('likes')}>{data.love_count.toLocaleString()}</MetaItem>
           <MetaItem
-            label="mô tả"
+            label={t('description')}
             icon={{ type: 'copy', value: data.desc || undefined }}
             classNames={{
               value: 'break-words whitespace-pre-line text-foreground font-normal',
             }}
           >
-            {data.desc || 'Không có mô tả'}
+            {data.desc || t('no_description')}
           </MetaItem>
         </div>
 
+        {downloadError ? (
+          <Alert variant="destructive">
+            <AlertTitle>{t('download_failed')}</AlertTitle>
+            <AlertDescription>{downloadError}</AlertDescription>
+          </Alert>
+        ) : null}
+
         {data.urls.length > 0 ? (
           <Button onClick={handleDownload} disabled={isDownloading} className="w-full">
-            Tải video
+            {isDownloading ? t('downloading_dots') : t('download_type', { type: t('video') })}
           </Button>
         ) : null}
       </div>

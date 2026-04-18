@@ -48,6 +48,38 @@ const eslintConfig = [
           argsIgnorePattern: '^_',
         },
       ],
+
+      // Restrict next/link and next/navigation from being used directly
+      'no-restricted-imports': [
+        'warn',
+        {
+          paths: [
+            {
+              name: 'next/link',
+              message:
+                'Please use `Link` from `@/i18n/navigation` to enable automatic i18n routing.',
+            },
+            {
+              name: 'next/navigation',
+              importNames: ['useRouter'],
+              message:
+                'Please use hook `useRouter` from `@/i18n/navigation` to enable automatic i18n routing.',
+            },
+            {
+              name: 'next/navigation',
+              importNames: ['usePathname'],
+              message:
+                'Please use hook `usePathname` from `@/i18n/navigation` to enable automatic i18n routing.',
+            },
+            {
+              name: 'next/navigation',
+              importNames: ['redirect'],
+              message:
+                'Please use function `redirect` from `@/i18n/navigation` to enable automatic i18n routing.',
+            },
+          ],
+        },
+      ],
     },
   },
 ]
